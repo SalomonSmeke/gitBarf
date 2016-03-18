@@ -42,7 +42,7 @@ cd ..
 ls -> [readme.md, 12345, 43210]
 cd 12345
 ls -a []
-´´´
+```
 
 ##wipe wipe goes barfUndo. it removes the directories gitBarf made.
 
@@ -53,4 +53,4 @@ cd foo
 ls -> [readme.md, 12345, 43210]
 ./barfUndo
 ls -> [readme.md]
-´´´
+```
