@@ -4,7 +4,7 @@ gitBarf and its cousin scripts do not need internet access. theyre also poorly b
 
 ###cleanup in aisle 5!
 
-##blehhhhhh goes gitBarf. it spits out the history of a git repo into itself.
+##blehhhhhh goes gitBarf. it spits out the historical contents of a git repo into itself.
 
 Example:
 A repo: *foo.git* has two commits. hashes:
