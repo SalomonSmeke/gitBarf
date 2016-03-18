@@ -5,7 +5,7 @@
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     if [ -d "../temp" ]; then
-      echo "folder ../temp already exists. please make this available. aborting..."
+      echo "folder ../temp already exists. aint messing with that. bye."
       exit 0
     fi
 
@@ -17,16 +17,13 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     do
       # Clone repositories
       if [ "${clone_hash}" != '' ]; then
-          if [ -d "${clone_hash}/.git" ]; then
-            echo "${clone_hash} folder already exists it IS a git repo, skipping..."
-            count=$((count + 1))
-          fi
           if [ -d "${clone_hash}" ]; then
               echo ""
               if [ -d "${clone_hash}/.git" ]; then
-                echo ""${clone_hash}" folder already exists it IS a git repo, skipping..."
+                echo ""${clone_hash}" folder already exists it IS a git repo. aint messing with that. skipping..."
+                count=$((count + 1))
               else
-                  echo "Aborting because a folder named '${clone_hash}' already exists, it is NOT a repo."
+                  echo "'${clone_hash}' already exists, it is NOT a repo. aint messing with that. bye."
                   rm -rf "${p}"/../temp
                   exit 0
               fi
