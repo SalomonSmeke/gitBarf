@@ -1,5 +1,9 @@
 # gitBarf
 
+gitBarf and its cousin scripts do not need internet access. theyre also poorly behaved children that have not been tested. and 0 thought has been put into them. use at your own risk.
+
+###cleanup in aisle 5!
+
 ##blehhhhhh goes gitBarf. it spits out the history of a git repo into itself.
 
 Example:
