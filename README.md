@@ -27,3 +27,6 @@ chmod +x gitBarf
 ls -> [readme.md, 12345]
 git status -> [clean]
 ```
+
+###sluuuuurp goes barfSlurp. it walks the direcotries gitBarf made and removes .git directories
+

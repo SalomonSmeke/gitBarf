@@ -1,0 +1,32 @@
+#!/bin/bash
+
+#This script IS NOT flawless. it has NOT been tested extensively.
+#This script is intended to be run inside a gihub repo. it will create folders containing every version commited of the current repository
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+
+    echo "Setting up..."
+    p=$(pwd) >/dev/null 2>&1
+    count=$((-1 + 1))
+    for clone_hash in $(git rev-list origin --all --no-merges --ignore-missing)
+    do
+      # Clone repositories
+      if [ "${clone_hash}" != '' ]; then
+          if [ -d "${clone_hash}" ]; then
+            cd "${p}"/"${clone_hash}"
+            echo "slurping ${clone_hash}"
+            rm -rf .git >/dev/null 2>&1
+            echo ""
+            count=$((count + 1))
+          else
+            echo "${clone_hash} not available to slurp"
+          fi
+      fi
+    done
+else
+    echo "I cannot run under this OS"
+    exit 0
+fi
+cd ${p}
+rm -rf ../temp
+echo "complete, for ${count} commits out of $(git rev-list origin --all --no-merges --ignore-missing --count)"
