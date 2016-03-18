@@ -30,3 +30,4 @@ git status -> [clean]
 
 ###sluuuuurp goes barfSlurp. it walks the direcotries gitBarf made and removes .git directories
 
+###wipe wipe goes barfUndo. it removes the directories gitBarf made.
