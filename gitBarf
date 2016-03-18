@@ -1,62 +1,136 @@
 #!/bin/bash
+set -e
 
 #This script IS NOT flawless. it has NOT been tested extensively.
 #This script is intended to be run inside a gihub repo. it will create folders containing every version commited of the current repository
 
+limit=0
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    if [ -d "../temp" ]; then
-      echo "folder ../temp already exists. aint messing with that. bye."
+    limit=100
+
+    if [[ $# -eq 0 ]] ; then
+      echo "default limit of commits will be used. ${limit}."
+      echo "to specify this, use -l flag"
+    fi
+
+    while getopts hl: opts; do
+      case ${opts} in
+        h)
+          echo "usage -l <int>"
+          echo "l: limit of commits"
+          exit 0;
+          ;;
+        l)
+          case ${OPTARG} in
+            ''|*[!0-9]*) echo "-l must be a number"; exit 0 ;;
+            *) limit=${OPTARG} ;;
+          esac
+          ;;
+      esac
+    done
+
+    echo -e "\033[33;32m Checking if location is barf-ready..."
+
+    if [ ! -d ".git/" ]; then
+      echo "This isnt a git repo! bye."
       exit 0
     fi
 
-    echo "Setting up..."
-    p=$(pwd) >/dev/null 2>&1
-    mkdir ../temp >/dev/null 2>&1
-    count=$((-1 + 1))
-    for clone_hash in $(git rev-list origin --all --no-merges --ignore-missing)
-    do
-      # Clone repositories
-      if [ "${clone_hash}" != '' ]; then
-          if [ -d "${clone_hash}" ]; then
-              echo ""
-              if [ -d "${clone_hash}/.git" ]; then
-                echo ""${clone_hash}" folder already exists it IS a git repo. aint messing with that. skipping..."
-                count=$((count + 1))
-              else
-                  echo "'${clone_hash}' already exists, it is NOT a repo. aint messing with that. bye."
-                  rm -rf "${p}"/../temp
-                  exit 0
-              fi
-          else
-              cd "${p}"
-              mkdir ../temp >/dev/null 2>&1
-              echo "Adding temporary folder"
-              cd ../temp
-              mkdir "${clone_hash}"
-              cd "${clone_hash}"
-              echo "Initializing repository"
-              git init >/dev/null 2>&1
-              git remote add parent "${p}" >/dev/null 2>&1
-              git pull parent master origin >/dev/null 2>&1
-              echo "Rebasing to commit"
-              git reset --hard "${clone_hash}" >/dev/null 2>&1
-              cd "${p}"
-              echo "Adding to gitignore"
-              echo "${clone_hash}" >> .gitignore
-              echo "Moving commit to proper dir"
-              mv ../temp/"${clone_hash}" "${p}"/"${clone_hash}"
-              echo "Changing remote path to relative"
-              cd "${p}"/"${clone_hash}"
-              git remote set-url parent ../
-              echo "     done for "${clone_hash}""
-              count=$((count + 1))
-          fi
-      fi
-    done
+    if [ -d "../temp" ]; then
+      echo "Folder ../temp already exists. aint messing with that. bye."
+      exit 0
+    fi
+    echo -e "\033[33;32m Seems good..."
 else
     echo "I cannot run under this OS"
     exit 0
 fi
-cd ${p}
+
+read -r -p "Directory seems good are you sure? [y/N] " response
+case $response in
+  [yY][eE][sS]|[yY])
+    echo "proceeding..."
+    ;;
+  *)
+    echo "exiting"
+    exit 0
+    ;;
+esac
+
+echo "Preparing environment"
+echo "  creating directories..."
+mkdir ../temp/
+
+echo "  handling .gitignore"
+if [ -f ".gitignore" ]; then
+  if [ -f "pre-barf.gitignore" ]; then
+    echo "    backup of .gitignore present. ignoring..."
+  else
+    echo "    backing up pre-barf .gitignore"
+    cp .gitignore pre-barf.gitignore
+  fi
+fi
+
+echo "Gathering env variables"
+currDir=$(pwd) >/dev/null 2>&1
+
+echo "  counting commits"
+commitCount=$(git rev-list origin --all --no-merges --ignore-missing --count) >/dev/null 2>&1
+processed=0
+if [[ commitCount > limit ]]; then
+  read -r -p "Commit count (${commitCount}) exceeds set limit (${limit}). Continue up to limit? [y/N] " response
+  case $response in
+    [yY][eE][sS]|[yY])
+      echo "  continuing with first ${limit} commits"
+      commitCount=${limit}
+      ;;
+    *)
+      echo "exiting"
+      rm -rf ${currDir}/../temp
+      exit 0
+      ;;
+  esac
+fi
+
+for clone_hash in $(git rev-list origin --all --no-merges --ignore-missing --max-count=${commitCount})
+do
+  cd ${currDir}
+  if [ "${clone_hash}" != '' ]; then
+    if [ -d "${clone_hash}" ]; then
+      if [ -d "${clone_hash}/.git" ]; then
+        echo ""${clone_hash}" folder already exists, it IS a git repo. skipping."
+        processed=$((processed + 1))
+      else
+        echo ""${clone_hash}" already exists, it is NOT a repo. aint messing with that. bye."
+        rm -rf "${currDir}"/../temp
+        exit 0
+      fi
+    else
+      echo "Processing $((processed + 1)) / ${commitCount}"
+      echo "  adding to .gitignore..."
+      echo "${clone_hash}" >> .gitignore
+      cd ../temp
+      mkdir ${clone_hash}
+      cd ${clone_hash}
+      echo "  repo init"
+      git init >/dev/null 2>&1
+      echo "  adding local remote"
+      git remote add parentNode "${currDir}" >/dev/null 2>&1
+      echo "  pulling local repo"
+      git pull parentNode master >/dev/null 2>&1
+      echo "  rebasing to ${clone_hash}"
+      ls
+      git reset --hard "${clone_hash}" >/dev/null 2>&1
+      echo "  moving to parent folder"
+      cd ..
+      mv ${clone_hash}/ ${currDir}/
+      cd ${currDir}
+      echo "ok!"
+      processed=$((processed + 1))
+    fi
+  fi
+done
+
+cd ${currDir}
 rm -rf ../temp
-echo "complete, for ${count} commits out of $(git rev-list origin --all --no-merges --ignore-missing --count)"
+echo "processed ${processed} / ${commitCount}"
