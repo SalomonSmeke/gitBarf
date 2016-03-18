@@ -4,52 +4,22 @@
 #This script is intended to be run inside a gihub repo. it will create folders containing every version commited of the current repository
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    if [ -d "../temp" ]; then
-      echo "folder ../temp already exists. aint messing with that. bye."
-      exit 0
-    fi
 
     echo "Setting up..."
     p=$(pwd) >/dev/null 2>&1
-    mkdir ../temp >/dev/null 2>&1
     count=$((-1 + 1))
     for clone_hash in $(git rev-list origin --all --no-merges --ignore-missing)
     do
       # Clone repositories
       if [ "${clone_hash}" != '' ]; then
           if [ -d "${clone_hash}" ]; then
-              echo ""
-              if [ -d "${clone_hash}/.git" ]; then
-                echo ""${clone_hash}" folder already exists it IS a git repo. aint messing with that. skipping..."
-                count=$((count + 1))
-              else
-                  echo "'${clone_hash}' already exists, it is NOT a repo. aint messing with that. bye."
-                  rm -rf "${p}"/../temp
-                  exit 0
-              fi
+            cd "${p}"
+            echo "wiping ${clone_hash}"
+            rm -rf ${clone_hash} >/dev/null 2>&1
+            echo ""
+            count=$((count + 1))
           else
-              cd "${p}"
-              mkdir ../temp >/dev/null 2>&1
-              echo "Adding temporary folder"
-              cd ../temp
-              mkdir "${clone_hash}"
-              cd "${clone_hash}"
-              echo "Initializing repository"
-              git init >/dev/null 2>&1
-              git remote add parent "${p}" >/dev/null 2>&1
-              git pull parent master origin >/dev/null 2>&1
-              echo "Rebasing to commit"
-              git reset --hard "${clone_hash}" >/dev/null 2>&1
-              cd "${p}"
-              echo "Adding to gitignore"
-              echo "${clone_hash}" >> .gitignore
-              echo "Moving commit to proper dir"
-              mv ../temp/"${clone_hash}" "${p}"/"${clone_hash}"
-              echo "Changing remote path to relative"
-              cd "${p}"/"${clone_hash}"
-              git remote set-url parent ../
-              echo "     done for "${clone_hash}""
-              count=$((count + 1))
+            echo "${clone_hash} not available to slurp"
           fi
       fi
     done
