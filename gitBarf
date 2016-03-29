@@ -5,7 +5,25 @@
 #This script is intended to be run inside a gihub repo. it will create folders containing every version commited of the current repository
 
 limit=0
-if [[ "$OSTYPE" == "darwin"* ]]; then
+OS=""
+Sentinel="correct"
+
+case "$(uname -s)" in
+
+   Darwin)
+     OS="correct"
+     ;;
+
+   Linux)
+     OS="correct"
+     ;;
+
+   *)
+     OS="aw :("
+     ;;
+esac
+
+if [[ "$OS" = "$Sentinel" ]]; then
     limit=100
 
     if [[ $# -eq 0 ]] ; then
