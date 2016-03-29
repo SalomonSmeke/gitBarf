@@ -24,7 +24,7 @@ case "$(uname -s)" in
 esac
 
 if [[ "$OS" = "$Sentinel" ]]; then
-    limit=100
+    limit=10
 
     if [[ $# -eq 0 ]] ; then
       echo "default limit of commits will be used. ${limit}."
@@ -39,9 +39,9 @@ if [[ "$OS" = "$Sentinel" ]]; then
           exit 0;
           ;;
         l)
+          limit=${OPTARG}
           case ${OPTARG} in
             ''|*[!0-9]*) echo "-l must be a number"; exit 0 ;;
-            *) limit=${OPTARG} ;;
           esac
           ;;
       esac
