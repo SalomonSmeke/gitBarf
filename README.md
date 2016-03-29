@@ -14,7 +14,7 @@ A repo: *foo.git* has two commits. hashes:
 cd foo
 ls -> [readme.md]
 git status -> [clean]
-curl https://raw.githubusercontent.com/SalomonSmeke/gitBarf/master/gitBarf
+wget https://raw.githubusercontent.com/SalomonSmeke/gitBarf/master/gitBarf
 chmod +x gitBarf
 ./gitBarf
 ls -> [readme.md, 12345, 43210]
@@ -25,7 +25,7 @@ git status -> [untracked: .gitignore]
 cd foo
 ls -> [readme.md, 12345]
 git status -> [clean]
-curl https://raw.githubusercontent.com/SalomonSmeke/gitBarf/master/gitBarf
+wget https://raw.githubusercontent.com/SalomonSmeke/gitBarf/master/gitBarf
 chmod +x gitBarf
 ./gitBarf -> [Nope!]
 ls -> [readme.md, 12345]
