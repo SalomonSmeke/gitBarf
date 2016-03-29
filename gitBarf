@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+#set -e
 
 #This script IS NOT flawless. it has NOT been tested extensively.
 #This script is intended to be run inside a gihub repo. it will create folders containing every version commited of the current repository
@@ -75,7 +75,7 @@ echo "Gathering env variables"
 currDir=$(pwd) >/dev/null 2>&1
 
 echo "  counting commits"
-commitCount=$(git rev-list origin --all --no-merges --ignore-missing --count) >/dev/null 2>&1
+commitCount=$(git rev-list --all --no-merges --ignore-missing --count) >/dev/null 2>&1
 processed=0
 if [[ commitCount > limit ]]; then
   read -r -p "Commit count (${commitCount}) exceeds set limit (${limit}). Continue up to limit? [y/N] " response
@@ -86,20 +86,19 @@ if [[ commitCount > limit ]]; then
       ;;
     *)
       echo "exiting"
-      rm -rf ${currDir}/../temp
+      rm -rf "${currDir}"/../temp
       exit 0
       ;;
   esac
 fi
 
-for clone_hash in $(git rev-list origin --all --no-merges --ignore-missing --max-count=${commitCount})
+for clone_hash in $(git rev-list --all --no-merges --ignore-missing --max-count=${commitCount})
 do
-  cd ${currDir}
+  cd "${currDir}"
   if [ "${clone_hash}" != '' ]; then
     if [ -d "${clone_hash}" ]; then
       if [ -d "${clone_hash}/.git" ]; then
         echo ""${clone_hash}" folder already exists, it IS a git repo. skipping."
-        processed=$((processed + 1))
       else
         echo ""${clone_hash}" already exists, it is NOT a repo. aint messing with that. bye."
         rm -rf "${currDir}"/../temp
@@ -115,7 +114,7 @@ do
       echo "  repo init"
       git init >/dev/null 2>&1
       echo "  adding local remote"
-      git remote add parentNode "${currDir}" >/dev/null 2>&1
+      git remote add parentNode \""${currDir}"\" >/dev/null 2>&1
       echo "  pulling local repo"
       git pull parentNode master >/dev/null 2>&1
       echo "  rebasing to ${clone_hash}"
@@ -123,7 +122,7 @@ do
       git reset --hard "${clone_hash}" >/dev/null 2>&1
       echo "  moving to parent folder"
       cd ..
-      mv ${clone_hash}/ ${currDir}/
+      mv ${clone_hash}/ "${currDir}"/
       cd ${currDir}
       echo "ok!"
       processed=$((processed + 1))
@@ -131,6 +130,6 @@ do
   fi
 done
 
-cd ${currDir}
+cd "${currDir}"
 rm -rf ../temp
 echo "processed ${processed} / ${commitCount}"
