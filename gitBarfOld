@@ -93,7 +93,14 @@ echo "Gathering env variables"
 currDir=$(pwd) >/dev/null 2>&1
 
 echo "  counting commits"
-commitCount=$(git rev-list --all --no-merges --count) >/dev/null 2>&1
+
+commitCount=0
+
+for cloneHash in $(git rev-list --all --no-merges --remove-empty)
+do
+  commitCount=$((commitCount + 1))
+done
+
 processed=0
 if [[ commitCount > limit ]]; then
   read -r -p "Commit count (${commitCount}) exceeds set limit (${limit}). Continue up to limit? [y/N] " response
@@ -110,7 +117,7 @@ if [[ commitCount > limit ]]; then
   esac
 fi
 
-for clone_hash in $(git rev-list --all --no-merges --max-count=${commitCount})
+for clone_hash in $(git rev-list --all --no-merges --remove-empty --max-count=${commitCount})
 do
   cd "${currDir}"
   if [ "${clone_hash}" != '' ]; then
@@ -130,14 +137,14 @@ do
       mkdir ${clone_hash}
       cd ${clone_hash}
       echo "  repo init"
-      git init >/dev/null 2>&1
+      git init
       echo "  adding local remote"
-      git remote add parentNode \""${currDir}"\" >/dev/null 2>&1
+      git remote add parentNode "${currDir}"
       echo "  pulling local repo"
-      git pull parentNode master >/dev/null 2>&1
+      git pull parentNode master
       echo "  rebasing to ${clone_hash}"
       ls
-      git reset --hard "${clone_hash}" >/dev/null 2>&1
+      git reset --hard "${clone_hash}"
       echo "  moving to parent folder"
       cd ..
       mv ${clone_hash}/ "${currDir}"/
